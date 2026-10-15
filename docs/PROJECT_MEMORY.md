@@ -44,6 +44,7 @@ Alert triage UI, risk scoring, incident workflow, SQLite storage, MITRE enrichme
 - Port-scan behavior is represented only by synthetic port-scan events.
 - Technical choices not explicitly specified by the user remain **Proposed** in `docs/DECISIONS.md`.
 - Actual foundation checks have been run and are recorded in the implementation plan; later-feature checks remain not run.
+- The only clean-release exception is the preserved pre-existing launcher, which contains its original absolute Windows command path. The launcher was not modified because it is outside MiniSOC scope.
 
 ## Current implementation
 

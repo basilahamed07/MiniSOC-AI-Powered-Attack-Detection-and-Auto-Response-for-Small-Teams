@@ -55,6 +55,20 @@ pytest
 
 The simulator repeatability test launches the CLI twice with seed `20261015` and compares stdout and stderr. The 1,000-line normal-traffic test parses all lines and asserts zero alerts. Later-session checks remain not run because those features do not exist yet.
 
+Foundation acceptance evidence:
+
+| Check | Actual result |
+|---|---|
+| Brute force | Passed: 100 seeded scenarios all produced a brute-force alert. |
+| Synthetic port scan | Passed: 100 seeded scenarios all produced a port-scan alert from event records only. |
+| SQL injection | Passed: all four representative payloads were flagged by `pytest`. |
+| Path traversal | Passed: plain, encoded, double-encoded, and backslash samples were flagged by `pytest`. |
+| False positives | Passed: 1,000 generated normal lines produced zero alerts. |
+| Parser edge cases | Passed: empty, malformed, invalid IP, invalid port, and invalid timestamp inputs were safe. |
+| Test suite | Passed: `pytest` collected 18 tests and reported 18 passed. |
+| Repeatability | Passed: two CLI runs with seed `20261015` were byte-identical at 5,876 bytes. |
+| Clean repository | Not fully passed: the preserved pre-existing launcher contains its original absolute Windows path. New MiniSOC files contain no secrets or machine-specific paths. |
+
 ## Change control
 
 Any scope expansion, live-data proposal, or technical choice must be added to `docs/DECISIONS.md` with a status. Directly specified safety constraints cannot be weakened by an implementation decision.

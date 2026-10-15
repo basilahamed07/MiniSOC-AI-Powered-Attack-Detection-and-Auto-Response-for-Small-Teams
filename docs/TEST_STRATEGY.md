@@ -51,6 +51,7 @@
 | Vertical flow | Offline simulator → parser → detection check | Passed: `pytest`, 2026-10-15 |
 | Safety | No host/network/real-scan access check | Passed by source review, 2026-10-15 |
 | Later features | SQLite, scoring, incidents, ML, dashboard, reports | Not run; not implemented |
+| Clean release | No secrets or absolute paths in newly created MiniSOC files | Not fully passed because the preserved launcher has a pre-existing absolute path |
 
 ## Evidence format
 
