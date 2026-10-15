@@ -50,7 +50,7 @@ Actual foundation check executed on 2026-10-15 with Python 3.12.3:
 
 ```text
 pytest
-18 passed in 0.59s
+18 passed in 0.56s
 ```
 
 The simulator repeatability test launches the CLI twice with seed `20261015` and compares stdout and stderr. The 1,000-line normal-traffic test parses all lines and asserts zero alerts. Later-session checks remain not run because those features do not exist yet.
