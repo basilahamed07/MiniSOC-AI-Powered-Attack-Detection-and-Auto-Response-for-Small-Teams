@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import re
+import hashlib
+import json
 from collections import defaultdict, deque
 from datetime import timedelta
 from typing import Iterable
@@ -237,4 +239,10 @@ def detect_all(events: Iterable[LogEvent]) -> list[Alert]:
         *detect_sql_injection(event_list),
         *detect_path_traversal(event_list),
     ]
-    return sorted(alerts, key=lambda alert: (alert.timestamp, alert.attack_type, alert.ip))
+    def sort_key(alert: Alert) -> tuple[object, str, str, str]:
+        digest = hashlib.sha256(
+            json.dumps(alert.to_dict(), sort_keys=True, separators=(",", ":")).encode("utf-8")
+        ).hexdigest()
+        return (alert.timestamp, alert.attack_type, alert.ip, digest)
+
+    return sorted(alerts, key=sort_key)

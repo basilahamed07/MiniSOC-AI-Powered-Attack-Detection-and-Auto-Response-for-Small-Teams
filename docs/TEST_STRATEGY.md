@@ -1,6 +1,6 @@
 # MiniSOC Test Strategy
 
-**Status:** Session 1 foundation checks executed; later-feature checks remain planned.
+**Status:** Offline sample-data prototype and rebuildability checks executed; production-only checks remain out of scope.
 
 ## Test principles
 
@@ -50,8 +50,23 @@
 | Synthetic port scan | Event-only scenario and detection evidence | Passed: `pytest`, 2026-10-15 |
 | Vertical flow | Offline simulator → parser → detection check | Passed: `pytest`, 2026-10-15 |
 | Safety | No host/network/real-scan access check | Passed by source review, 2026-10-15 |
-| Later features | SQLite, scoring, incidents, ML, dashboard, reports | Not run; not implemented |
-| Clean release | No secrets or absolute paths in newly created MiniSOC files | Not fully passed because the preserved launcher has a pre-existing absolute path |
+| Prototype features | SQLite, scoring, incidents, ML, dashboard, reports | Passed: `pytest` 32 passed, 2026-10-15 |
+| Clean release | No secrets or machine-specific absolute paths in tracked files | Passed after replacing the launcher path with a `PATH` lookup, 2026-10-20 |
+| Prototype integration | Scoring, MITRE, incidents, SQLite, anomaly, response, Flask, reports | Passed: `pytest` 32 passed, 2026-10-15 |
+| Docker | Build and local dashboard smoke test | Not run: Docker CLI unavailable in the current validation container |
+| Local dashboard smoke | Loopback `/healthz`, `/dashboard`, and Markdown report | Passed: local Flask process smoke test on `127.0.0.1:18002`, 2026-10-20 |
+| Python target runtime | Python 3.12.3 test run | Not run: Python 3.12.3 unavailable in current validation container; tests ran on Python 3.11.2 |
+| Rebuildability files | Lockfile, runtime pin, Dockerfile, README, env template, and portable launcher | Passed by tracked-file inspection, 2026-10-20 |
+| Clean dependency rebuild | New project-local virtual environment installed `requirements.lock`, passed `pip check`, and ran `pytest` | Passed: 32 tests on Python 3.11.2, 2026-10-20 |
+
+## Prototype sample-data acceptance
+
+- Mixed scenario: 57 generated events and four alerts.
+- Normal scenario: 40 generated events and zero alerts.
+- Alert fields include deterministic evidence, risk score, MITRE technique, status, and incident reference.
+- SQLite round-trip stores events, alerts, incidents, anomalies, and simulated responses.
+- Dashboard tests cover mixed, normal, invalid, alert detail, health, API, and report routes.
+- The source AST check found no network/scanning imports in the application source.
 
 ## Evidence format
 

@@ -1,10 +1,10 @@
 # MiniSOC Project Memory
 
-**Last updated:** 2026-10-15
+**Last updated:** 2026-10-20
 
 ## Snapshot
 
-MiniSOC is an offline, small-scale security operations center simulator. Session 1 foundation implementation is complete: canonical records, SSH/Nginx parsers, four explainable detections, structured alerts, and a deterministic simulator.
+MiniSOC is an offline, small-scale security operations center simulator. The local sample-data prototype is complete: canonical records, SSH/Nginx parsers, four explainable detections, structured alerts, scoring, incidents, SQLite, anomaly scoring, simulated responses, a Flask dashboard, and reports.
 
 ## Goal
 
@@ -23,18 +23,20 @@ The planned product scope is:
 7. **Offline output:** reproducible scenario reports and evidence export/summary.
 8. **Quality and delivery:** deterministic fixtures, unit/integration/scenario checks, documentation, and a reproducible project command set.
 
-## Session 1 focus
+## Prototype status
 
-Session 1 will establish the foundation:
+The local sample-data prototype includes:
 
-- define the canonical event and detection contracts; **complete**
-- implement the fake-data-only simulator and scenario fixtures; **complete**
-- implement parsers and validation for SSH, Nginx, and documented JSON fixtures; **complete**
-- implement initial explainable detections, including synthetic port-scan events; **complete**
-- connect simulator → parser → detection flow; **complete**
-- record offline functional and safety evidence; **verified by the foundation test suite and source review**
+- canonical event and detection contracts;
+- a fake-data-only simulator and scenario fixtures;
+- SSH, Nginx, and documented JSON parsing and validation;
+- brute-force, synthetic port-scan, SQL-injection, and path-traversal rules;
+- risk scoring, incident grouping, SQLite storage, and MITRE enrichment;
+- offline anomaly detection and simulated blocking;
+- a local Flask dashboard, API, and evidence views; and
+- deterministic JSON and Markdown reports.
 
-Alert triage UI, risk scoring, incident workflow, SQLite storage, MITRE enrichment, anomaly detection, simulated blocking, exports, and dashboard work remain later-scope work.
+Live collection, real port scanning, and production deployment remain out of scope. The Flask listener is allowed only as a local/demo presentation surface for synthetic results.
 
 ## Hard constraints
 
@@ -42,9 +44,9 @@ Alert triage UI, risk scoring, incident workflow, SQLite storage, MITRE enrichme
 - The simulator must never scan the host or any real system.
 - No local host inspection, live telemetry collection, socket access, network traffic, real port scanning, or invocation of scanning utilities.
 - Port-scan behavior is represented only by synthetic port-scan events.
-- Technical choices not explicitly specified by the user remain **Proposed** in `docs/DECISIONS.md`.
-- Actual foundation checks have been run and are recorded in the implementation plan; later-feature checks remain not run.
-- The only clean-release exception is the preserved pre-existing launcher, which contains its original absolute Windows command path. The launcher was not modified because it is outside MiniSOC scope.
+- Technical choices made for the prototype are recorded as **Accepted for prototype** in `docs/DECISIONS.md`; production choices remain **Proposed**.
+- Actual prototype checks are recorded in the implementation plan and test strategy.
+- The launcher is a convenience wrapper outside MiniSOC application scope; it resolves `omnirush.cmd` through `PATH` and must not contain machine-specific paths.
 
 ## Current implementation
 
@@ -53,11 +55,17 @@ Alert triage UI, risk scoring, incident workflow, SQLite storage, MITRE enrichme
 - `src/minisoc/detectors.py` implements brute force, synthetic port scan, SQL injection, path traversal, and combined detection.
 - `src/minisoc/attack_simulator.py` emits seeded normal and attack traffic without host or network access.
 - `tests/` contains parser, detector, false-positive, integration, and repeatability checks.
+- `src/minisoc/scoring.py`, `mitre.py`, and `incidents.py` enrich alerts for analyst use.
+- `src/minisoc/storage.py` persists synthetic snapshots to SQLite.
+- `src/minisoc/anomaly.py` uses a fixed-seed Isolation Forest over synthetic source aggregates.
+- `src/minisoc/response.py` returns simulated block decisions only.
+- `src/minisoc/app.py` renders the local dashboard, API, evidence views, and reports.
+- `PROTOTYPE_CHECKLIST.md` records capability and verification status, including the Docker environment gap.
 
 ## Open questions
 
-Risk scoring, incident grouping, storage, UI approach, detection configuration, ATT&CK enrichment, and export format are unresolved. They are tracked as proposed decisions rather than silently assumed choices.
+Production-grade authentication, live ingestion, multi-user persistence, and deployment topology remain unresolved and out of prototype scope. The local prototype choices are recorded as accepted in `docs/DECISIONS.md`.
 
 ## Continuity note
 
-The full-scope list above is the working MiniSOC baseline. Session 1 implementation is intentionally limited to fake telemetry, parsing, detection, and deterministic evidence. No live collection or real port scanning may be introduced later.
+The full-scope list above is the working MiniSOC baseline. No live collection or real port scanning may be introduced later.

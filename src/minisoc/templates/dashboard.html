@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MiniSOC · Synthetic evidence workbench</title>
+  <style>
+    :root { color-scheme: dark; --canvas:#0f151c; --surface:#151e27; --raised:#1b2732; --line:#2a3a47; --text:#e6edf3; --muted:#8ea0ad; --cyan:#55c4d8; --high:#ed6a67; --medium:#d6a64a; --green:#64b98a; }
+    * { box-sizing:border-box; } body { margin:0; background:var(--canvas); color:var(--text); font:14px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif; }
+    main { max-width:1180px; margin:0 auto; padding:28px 20px 52px; } header { display:flex; justify-content:space-between; gap:20px; align-items:end; border-bottom:1px solid var(--line); padding-bottom:20px; }
+    h1,h2,p { margin:0; } h1 { font-size:27px; letter-spacing:-.02em; } h2 { font-size:17px; margin-bottom:14px; } .eyebrow,.muted { color:var(--muted); } .eyebrow { text-transform:uppercase; letter-spacing:.12em; font-size:11px; font-weight:700; }
+    .safety { color:var(--green); font-size:12px; text-align:right; } .grid { display:grid; gap:14px; } .metrics { grid-template-columns:repeat(4,1fr); margin:22px 0; } .card { background:var(--surface); border:1px solid var(--line); border-radius:7px; padding:16px; } .metric-value { font-size:29px; font-variant-numeric:tabular-nums; margin-top:5px; }
+    .columns { grid-template-columns:1fr 1.5fr; margin-bottom:20px; } .facts { display:grid; grid-template-columns:1fr 1fr; gap:12px; } .fact strong { display:block; font-size:14px; } .fact span { color:var(--muted); font-size:12px; }
+    form { display:flex; flex-wrap:wrap; gap:8px; align-items:end; margin-bottom:16px; } label { display:grid; gap:4px; color:var(--muted); font-size:12px; } input,select,button { border:1px solid var(--line); border-radius:5px; background:var(--raised); color:var(--text); padding:8px 10px; font:inherit; } button { color:var(--canvas); background:var(--cyan); border-color:var(--cyan); font-weight:700; cursor:pointer; } a { color:var(--cyan); text-decoration:none; } a:hover,a:focus { text-decoration:underline; } :focus-visible { outline:2px solid var(--cyan); outline-offset:2px; }
+    table { width:100%; border-collapse:collapse; } th,td { border-bottom:1px solid var(--line); padding:11px 9px; text-align:left; vertical-align:top; } th { color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.08em; } .mono { font-family:ui-monospace,SFMono-Regular,Consolas,monospace; } .badge { display:inline-block; border:1px solid currentColor; border-radius:999px; padding:2px 8px; font-size:11px; font-weight:700; } .high { color:var(--high); } .medium { color:var(--medium); } .new { color:var(--cyan); }
+    .empty { padding:24px 4px; color:var(--muted); } .footer { margin-top:22px; color:var(--muted); font-size:12px; } @media(max-width:760px){ header,.columns { display:block; } .safety { text-align:left; margin-top:10px; } .metrics { grid-template-columns:1fr 1fr; } .card { margin-bottom:14px; } table { display:block; overflow-x:auto; white-space:nowrap; } }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <div><div class="eyebrow">MiniSOC / evidence workbench</div><h1>Synthetic security operations</h1><p class="muted">Scenario <span class="mono">{{ snapshot.scenario }}</span> · seed <span class="mono">{{ snapshot.seed }}</span></p></div>
+    <div class="safety">FAKE DATA ONLY<br>no live collection · no real scanning</div>
+  </header>
+  <section class="grid metrics" aria-label="Summary metrics">
+    <div class="card"><div class="eyebrow">Events</div><div class="metric-value">{{ summary.event_count }}</div></div>
+    <div class="card"><div class="eyebrow">Alerts</div><div class="metric-value">{{ summary.alert_count }}</div></div>
+    <div class="card"><div class="eyebrow">High severity</div><div class="metric-value high">{{ summary.high_alert_count }}</div></div>
+    <div class="card"><div class="eyebrow">Incidents</div><div class="metric-value">{{ summary.incident_count }}</div></div>
+  </section>
+  <section class="grid columns">
+    <div class="card"><h2>Scenario facts</h2><div class="facts"><div class="fact"><strong>{{ summary.synthetic_source_count }}</strong><span>alerting IPs</span></div><div class="fact"><strong>{{ snapshot.anomalies|selectattr('is_anomaly')|list|length }}</strong><span>anomalous sources</span></div><div class="fact"><strong>{{ snapshot.responses|length }}</strong><span>simulated blocks</span></div><div class="fact"><strong>{{ summary.activity_start or '—' }}</strong><span>UTC start</span></div></div></div>
+    <div class="card"><h2>Filter alerts</h2><form method="get" action="{{ url_for('dashboard') }}"><input type="hidden" name="scenario" value="{{ snapshot.scenario }}"><input type="hidden" name="seed" value="{{ snapshot.seed }}"><label>Severity<select name="severity"><option value="">All</option><option value="high" {% if filters.severity=='high' %}selected{% endif %}>High</option><option value="medium" {% if filters.severity=='medium' %}selected{% endif %}>Medium</option></select></label><label>Attack type<input name="attack_type" value="{{ filters.attack_type }}" placeholder="e.g. brute_force"></label><label>Source IP<input name="ip" value="{{ filters.ip }}" placeholder="synthetic IP"></label><button type="submit">Apply</button><a href="{{ url_for('dashboard', scenario=snapshot.scenario, seed=snapshot.seed) }}">Clear</a></form><p class="muted">API: <a href="{{ url_for('api_snapshot', scenario=snapshot.scenario, seed=snapshot.seed) }}">JSON snapshot</a> · <a href="{{ url_for('report', report_format='markdown', scenario=snapshot.scenario, seed=snapshot.seed) }}">Markdown report</a></p></div>
+  </section>
+  <section class="grid columns">
+    <div class="card"><h2>Top attackers</h2>{% if top_attackers %}<table><thead><tr><th>Source IP</th><th>Alerts</th></tr></thead><tbody>{% for attacker in top_attackers %}<tr><td class="mono">{{ attacker.ip }}</td><td>{{ attacker.alert_count }}</td></tr>{% endfor %}</tbody></table>{% else %}<div class="empty">No alerting synthetic sources in this scenario.</div>{% endif %}</div>
+    <div class="card"><h2>Incident timeline</h2>{% if timeline %}<table><thead><tr><th>UTC</th><th>Detection</th><th>Source</th></tr></thead><tbody>{% for item in timeline %}<tr><td class="mono">{{ item.timestamp.strftime('%H:%M:%S') }}</td><td><a href="{{ url_for('alert_detail', reference=item.reference, scenario=snapshot.scenario, seed=snapshot.seed) }}">{{ item.attack_type|replace('_',' ')|title }}</a></td><td class="mono">{{ item.ip }}</td></tr>{% endfor %}</tbody></table>{% else %}<div class="empty">No incidents in this synthetic run.</div>{% endif %}</div>
+  </section>
+  <section class="card"><h2>Alerts <span class="muted">({{ alerts|length }} shown)</span></h2>{% if alerts %}<table><thead><tr><th>Severity</th><th>Detection</th><th>Source IP</th><th>Risk</th><th>ATT&amp;CK</th><th>Status</th><th>Evidence</th></tr></thead><tbody>{% for item in alerts %}<tr><td><span class="badge {{ item.alert.severity }}">{{ item.alert.severity }}</span></td><td><a href="{{ url_for('alert_detail', reference=item.reference, scenario=snapshot.scenario, seed=snapshot.seed) }}">{{ item.alert.attack_type|replace('_',' ')|title }}</a></td><td class="mono">{{ item.alert.ip }}</td><td>{{ item.risk_score }}/100</td><td class="mono">{{ item.mitre_id }}</td><td><span class="badge new">{{ item.status }}</span></td><td>{{ item.alert.evidence|length }} event(s)</td></tr>{% endfor %}</tbody></table>{% else %}<div class="empty"><strong>No detections in this synthetic run.</strong><br>The selected scenario produced events but no matching rules for these filters.</div>{% endif %}</section>
+  <p class="footer">MiniSOC is an offline educational prototype. Every address, event, alert, anomaly, and response above is synthetic and deterministic.</p>
+</main>
+</body></html>

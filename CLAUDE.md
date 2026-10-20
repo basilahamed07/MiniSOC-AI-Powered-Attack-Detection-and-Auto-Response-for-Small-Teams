@@ -2,13 +2,13 @@
 
 ## Current status
 
-- Session 1 implementation is complete for the foundation: parsers, detections, alerts, and the safe simulator.
-- Later sessions for SQLite, scoring, incidents, ML, dashboard, and reports remain planned.
-- The existing launcher is outside the scope of this documentation update and must remain unchanged.
+- The offline prototype is complete for the planned local sample-data workflow: parsers, detections, alerts, scoring, incidents, SQLite, ML anomaly scoring, simulated response, dashboard, and reports.
+- Future work is polish and release hardening; live collection remains out of scope.
+- The launcher is a convenience wrapper outside the application; it must resolve `omnirush.cmd` through `PATH` and must not embed machine-specific paths.
 
 ## Non-negotiable simulator boundary
 
-The simulator uses fake, deterministic data only. It must never scan the host, inspect the local machine, open sockets, send network traffic, invoke port-scanning tools, or access any real system. Port-scan behavior is represented only by synthetic port-scan events produced by the simulator or fixtures.
+The simulator and analysis pipeline use fake, deterministic data only. They must never inspect the local machine, open collection sockets, send outbound traffic, invoke port-scanning tools, or access any real system. The local Flask dashboard may listen on a loopback/demo port only to serve synthetic results; it must not collect live data. Port-scan behavior is represented only by synthetic port-scan events produced by the simulator or fixtures.
 
 Any future live collection, host inspection, or real port scanning is outside MiniSOC scope. A feature is not complete if it requires such access.
 
@@ -35,4 +35,4 @@ The full-scope baseline is detailed in `docs/PROJECT_MEMORY.md` and `docs/ARCHIT
 - Record decisions and their status in `docs/DECISIONS.md`.
 - Do not claim implementation completion without the evidence required by the task.
 - Planned checks and actual checks are separate; only commands recorded as executed may be marked **Passed**.
-- The foundation test command is `pytest`.
+- The test command is `pytest`.

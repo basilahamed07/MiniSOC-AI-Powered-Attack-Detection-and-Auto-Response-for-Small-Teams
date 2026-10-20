@@ -1,6 +1,6 @@
 # MiniSOC Architecture
 
-**Status:** Session 1 foundation implemented; later persistence and analyst components remain proposed.
+**Status:** Offline sample-data prototype implemented; live collection and production operations remain out of scope.
 
 ## Boundary
 
@@ -13,9 +13,10 @@ MiniSOC is an offline pipeline operating on generated fixtures. It has no live c
 3. **Parser adapters (Session 1)** — convert SSH auth, synthetic connection, Nginx combined, and structured JSON fixture lines into canonical events.
 4. **Normalizer and validator (Session 1)** — validates required fields, normalizes types/time values to aware UTC values, and safely skips malformed events.
 5. **Detection engine (Session 1)** — evaluates normalized event windows for brute force, synthetic port scan, SQL injection, and path traversal.
-6. **Alert and correlation layer (later)** — groups related detections, deduplicates alerts, and builds incident timelines.
-7. **Analyst presentation (later)** — provides event search, alert triage, explanations, and evidence views.
-8. **Offline report/export (later)** — produces reproducible synthetic evidence summaries.
+6. **Enrichment and incident layer** — adds 0–100 risk, ATT&CK tags, deterministic source-IP incidents, and simulated response decisions.
+7. **SQLite snapshot store** — retains generated events, enriched alerts, incidents, anomalies, and responses for local demonstration.
+8. **Analyst presentation** — local-only Flask dashboard, JSON API, alert evidence, and filters.
+9. **Offline report/export** — produces reproducible synthetic Markdown and JSON evidence summaries.
 
 ## Conceptual flow
 
@@ -32,7 +33,7 @@ synthetic generator -> fixture/event stream -> parser adapters
                                   detection rules + evidence
                                                |
                                                v
-                              alerts/incidents -> analyst views
+                               enriched snapshot -> SQLite/API/dashboard/reports
 ```
 
 The generator must be injectable into the pipeline as a data source. It must not discover its environment or call operating-system/network APIs. The synthetic port-scan scenario emits event records; it never performs a scan.
@@ -41,7 +42,7 @@ The generator must be injectable into the pipeline as a data source. It must not
 
 The implemented `LogEvent` carries `event_id`, `source`, UTC `timestamp`, source `ip`, `event_type`, raw provenance, and optional port, target, method, status, username, and metadata fields. The implemented `Alert` carries the required `ip`, `attack_type`, `timestamp`, `severity`, and ordered `evidence` fields and serializes to JSON-friendly values.
 
-Risk score, ATT&CK technique, incident ID, and persistence fields are later extensions and remain **Proposed** in `docs/DECISIONS.md`.
+The prototype adds risk score, ATT&CK technique, incident ID, and persistence fields in the enrichment and storage layers. These fields are derived from synthetic input only.
 
 ## Design properties
 

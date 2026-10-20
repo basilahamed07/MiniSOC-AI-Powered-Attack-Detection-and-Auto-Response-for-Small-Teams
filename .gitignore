@@ -15,4 +15,5 @@ dist/
 .mypy_cache/
 .ruff_cache/
 generated/
+samples/*.log
 coverage.xml

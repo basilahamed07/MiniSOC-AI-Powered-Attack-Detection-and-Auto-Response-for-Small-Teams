@@ -1,6 +1,6 @@
 # MiniSOC Implementation Plan
 
-**Status:** Session 1 foundation complete; later sessions proposed.
+**Status:** Offline sample-data prototype complete; production hardening remains future work.
 
 ## Delivery sequence
 
@@ -13,15 +13,20 @@
 5. Connect the simulator, parsers, and detection engine in an offline vertical flow. **Complete** in `tests/test_simulator.py`.
 6. Run the planned unit, integration, scenario, and safety checks. **Foundation checks complete; see actual checks below**.
 
-### Later sessions — proposed
+### Prototype completion — complete
 
-7. Add risk scoring and ATT&CK technique enrichment.
-8. Add alert deduplication, correlation, incident timelines, and triage state.
-9. Add SQLite persistence.
-10. Add offline Isolation Forest anomaly detection and simulated blocking.
-11. Add analyst search/filtering and evidence views.
-12. Add synthetic evidence export/reporting.
-13. Package the reproducible setup, run, test, and deployment workflow.
+7. Add risk scoring and ATT&CK technique enrichment. **Complete**.
+8. Add alert deduplication, correlation, incident timelines, and triage state. **Complete for deterministic same-IP grouping and read-only status**.
+9. Add SQLite persistence. **Complete**.
+10. Add offline Isolation Forest anomaly detection and simulated blocking. **Complete**.
+11. Add analyst search/filtering and evidence views. **Complete for local Flask dashboard**.
+12. Add synthetic evidence export/reporting. **Complete for JSON and Markdown**.
+13. Package the reproducible setup, run, test, and deployment workflow. **Implemented for pinned dependencies, Dockerfile, README, local commands, and portable launcher; Docker execution remains to be verified on a Docker-enabled host**.
+
+### Future product work — proposed
+
+- Live ingestion is explicitly out of scope for this project.
+- Authentication, multi-user workflows, production deployment, and richer persisted triage are not part of this prototype.
 
 ## Session 1 acceptance criteria
 
@@ -46,14 +51,14 @@
 
 ## Actual checks
 
-Actual foundation check executed on 2026-10-15 with Python 3.12.3:
+Actual prototype checks executed with Python 3.11.2 in the Linux validation container:
 
 ```text
 pytest
-18 passed in 0.56s
+32 passed in 25.28s
 ```
 
-The simulator repeatability test launches the CLI twice with seed `20261015` and compares stdout and stderr. The 1,000-line normal-traffic test parses all lines and asserts zero alerts. Later-session checks remain not run because those features do not exist yet.
+The simulator repeatability test launches the CLI twice with seed `20261015` and compares stdout and stderr. The 1,000-line normal-traffic test parses all lines and asserts zero alerts. Prototype tests cover SQLite round-trips, reports, Flask routes, risk scoring, MITRE enrichment, incidents, Isolation Forest, and simulated responses.
 
 Foundation acceptance evidence:
 
@@ -65,9 +70,11 @@ Foundation acceptance evidence:
 | Path traversal | Passed: plain, encoded, double-encoded, and backslash samples were flagged by `pytest`. |
 | False positives | Passed: 1,000 generated normal lines produced zero alerts. |
 | Parser edge cases | Passed: empty, malformed, invalid IP, invalid port, and invalid timestamp inputs were safe. |
-| Test suite | Passed: `pytest` collected 18 tests and reported 18 passed. |
-| Repeatability | Passed: two CLI runs with seed `20261015` were byte-identical at 5,876 bytes. |
-| Clean repository | Not fully passed: the preserved pre-existing launcher contains its original absolute Windows path. New MiniSOC files contain no secrets or machine-specific paths. |
+| Test suite | Passed: `pytest` collected 32 tests and reported 32 passed. |
+| Repeatability | Passed: two CLI runs with seed `20261015` were byte-identical at 5,819 bytes. |
+| Prototype enrichment | Passed: scoring, MITRE tags, incidents, SQLite, anomaly scoring, responses, dashboard, and reports covered by `pytest`. |
+| Hardening regressions | Passed: SQLite load consistency, seed bounds, deterministic same-time ordering, and evidence-rich Markdown reports covered by `pytest`. |
+| Clean repository | Passed: tracked-file scan found no machine-specific absolute paths or secrets; the launcher resolves `omnirush.cmd` through `PATH`. |
 
 ## Change control
 

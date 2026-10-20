@@ -176,3 +176,27 @@ def test_alert_serialization_has_required_fields() -> None:
         "evidence",
     }
     assert event.event_type == "auth_failure"
+
+
+def test_detect_all_has_canonical_order_for_same_timestamp_requests() -> None:
+    first = make_event(
+        1,
+        0,
+        "203.0.113.10",
+        "http_request",
+        target="/search?q=UNION%20SELECT%20a",
+    )
+    second = make_event(
+        2,
+        0,
+        "203.0.113.10",
+        "http_request",
+        target="/search?q=%27%20OR%201%3D1",
+    )
+
+    forward = detect_all([first, second])
+    reverse = detect_all([second, first])
+
+    assert [item.evidence[0]["event_id"] for item in forward] == [
+        item.evidence[0]["event_id"] for item in reverse
+    ]
